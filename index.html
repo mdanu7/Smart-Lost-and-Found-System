@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Lost & Found - Campus Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .sidebar-active {
+            background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- 1. LEFT SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-[#0f172a] text-slate-300 flex flex-col justify-between shrink-0 shadow-xl z-20">
+        <div>
+            <!-- University Branding Header -->
+            <div class="bg-white text-slate-900 p-4 flex items-center gap-3 border-b border-slate-200">
+                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-extrabold text-lg shadow">
+                    GEU
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-sm leading-tight text-slate-900">Graphic Era</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">Deemed to be University</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1.5 mt-2">
+                <button onclick="switchTab('home')" id="nav-home" class="sidebar-active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition">
+                    <i data-lucide="home" class="w-4 h-4"></i> Home
+                </button>
+                <button onclick="switchTab('feed')" id="nav-feed" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition">
+                    <i data-lucide="search" class="w-4 h-4"></i> Lost & Found
+                </button>
+                <button onclick="openReportForm('lost')" id="nav-lost" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400"></i> Report Lost Item
+                </button>
+                <button onclick="openReportForm('found')" id="nav-found" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition">
+                    <i data-lucide="gift" class="w-4 h-4 text-emerald-400"></i> Report Found Item
+                </button>
+                <button onclick="switchTab('ai')" id="nav-ai" class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-3"><i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i> AI Matching</span>
+                    <span id="sidebarMatchBadge" class="bg-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- DYNAMIC Campus Hero Karma Leaderboard -->
+        <div class="p-4 m-3 bg-slate-800/80 rounded-xl border border-slate-700">
+            <p class="text-xs font-bold text-amber-400 flex items-center gap-1.5 mb-2">
+                <i data-lucide="award" class="w-4 h-4"></i> Top Campus Finders
+            </p>
+            <div id="leaderboardList" class="space-y-2 text-xs text-slate-400">
+                <!-- Dynamically filled from database -->
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col overflow-y-auto">
+
+        <!-- TOP NAVBAR -->
+        <header class="bg-white px-6 py-3.5 shadow-sm flex justify-between items-center sticky top-0 z-10">
+            <div class="relative w-96">
+                <input type="text" id="globalSearch" oninput="handleGlobalSearch(this.value)" placeholder="Search for items, e.g. keys, bag, ID card..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
+            </div>
+
+            <div class="flex items-center gap-5">
+                <button onclick="switchTab('ai')" class="relative text-slate-600 hover:text-blue-600">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                <div class="flex items-center gap-2.5">
+                    <img src="https://ui-avatars.com/api/?name=Student+User&background=2563eb&color=fff" class="w-8 h-8 rounded-full" alt="User">
+                    <span class="text-sm font-semibold text-slate-700">Campus Portal</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE VIEWS CONTAINER -->
+        <main class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+            <!-- ================= VIEW 1: HOME DASHBOARD ================= -->
+            <div id="view-home" class="space-y-6">
+                
+                <!-- UNIVERSITY HERO BANNER -->
+                <div class="relative rounded-2xl overflow-hidden shadow-lg h-72 flex items-center">
+                    <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1400&q=80" class="absolute inset-0 w-full h-full object-cover" alt="University Campus">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent"></div>
+
+                    <div class="relative z-10 p-8 max-w-xl text-white space-y-4">
+                        <span class="bg-blue-600/90 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">AI-Powered Campus Network</span>
+                        <h2 class="text-4xl font-extrabold leading-tight">Smart Lost & Found</h2>
+                        <p class="text-slate-200 text-sm">Reconnecting our campus community with what matters using Computer Vision & NLP matching.</p>
+
+                        <div class="flex flex-wrap gap-3 pt-2">
+                            <button onclick="openReportForm('lost')" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow flex items-center gap-2 text-sm transition">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Report Lost Item
+                            </button>
+                            <button onclick="openReportForm('found')" class="bg-white hover:bg-slate-100 text-slate-900 font-semibold px-5 py-2.5 rounded-xl shadow flex items-center gap-2 text-sm transition">
+                                <i data-lucide="plus" class="w-4 h-4 text-emerald-600"></i> Report Found Item
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATS & DYNAMIC ANNOUNCEMENTS ROW -->
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- 3 KPI Stat Cards -->
+                    <div class="lg:col-span-2 grid grid-cols-3 gap-4">
+                        <div class="bg-red-50/70 border border-red-100 p-5 rounded-2xl flex flex-col justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-red-100 text-red-600 rounded-xl"><i data-lucide="search" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h3 id="statLostCount" class="text-2xl font-extrabold text-slate-900">0</h3>
+                                    <p class="text-xs text-slate-500 font-medium">Lost Items</p>
+                                </div>
+                            </div>
+                            <button onclick="switchTab('feed')" class="text-xs text-red-600 font-semibold mt-4 text-right hover:underline">View All →</button>
+                        </div>
+
+                        <div class="bg-emerald-50/70 border border-emerald-100 p-5 rounded-2xl flex flex-col justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><i data-lucide="gift" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h3 id="statFoundCount" class="text-2xl font-extrabold text-slate-900">0</h3>
+                                    <p class="text-xs text-slate-500 font-medium">Found Items</p>
+                                </div>
+                            </div>
+                            <button onclick="switchTab('feed')" class="text-xs text-emerald-600 font-semibold mt-4 text-right hover:underline">View All →</button>
+                        </div>
+
+                        <div class="bg-purple-50/70 border border-purple-100 p-5 rounded-2xl flex flex-col justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-purple-100 text-purple-600 rounded-xl"><i data-lucide="cpu" class="w-6 h-6"></i></div>
+                                <div>
+                                    <h3 id="statMatchCount" class="text-2xl font-extrabold text-slate-900">0</h3>
+                                    <p class="text-xs text-slate-500 font-medium">AI Matches</p>
+                                </div>
+                            </div>
+                            <button onclick="switchTab('ai')" class="text-xs text-purple-600 font-semibold mt-4 text-right hover:underline">Check Match →</button>
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC Campus Notices (Updates automatically when items are added) -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-sm flex items-center gap-2 text-slate-800">
+                                <i data-lucide="megaphone" class="w-4 h-4 text-blue-600"></i> Live Campus Notices
+                            </h4>
+                            <span class="text-xs text-blue-600 font-semibold">Real-Time</span>
+                        </div>
+                        <ul id="campusNoticesList" class="space-y-2.5 text-xs text-slate-600">
+                            <!-- Dynamically populated from database -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- RECENTLY REPORTED CARDS -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg text-slate-900">Recently Reported Items</h3>
+                        <button onclick="switchTab('feed')" class="text-sm text-blue-600 font-semibold hover:underline">View All</button>
+                    </div>
+                    <div id="homeRecentFeed" class="grid sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW 2: LOST & FOUND LIST VIEW ================= -->
+            <div id="view-feed" class="hidden space-y-5">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+                    <h2 class="text-xl font-bold text-slate-900">Lost & Found Directory</h2>
+                    <div class="flex flex-wrap gap-3">
+                        <select id="filterCategory" onchange="renderAllFeeds()" class="px-3 py-2 bg-slate-50 border rounded-xl text-xs font-medium">
+                            <option value="all">All Categories</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Wallets & Bags">Wallets & Bags</option>
+                            <option value="ID Cards">ID Cards</option>
+                            <option value="Books & Notes">Books & Notes</option>
+                        </select>
+                        <select id="filterStatus" onchange="renderAllFeeds()" class="px-3 py-2 bg-slate-50 border rounded-xl text-xs font-medium">
+                            <option value="all">All Status</option>
+                            <option value="lost">Lost Only</option>
+                            <option value="found">Found Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="directoryList" class="space-y-3"></div>
+            </div>
+
+            <!-- ================= VIEW 3: REPORT LOST/FOUND FORM ================= -->
+            <div id="view-form" class="hidden max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 id="formHeading" class="text-2xl font-extrabold text-slate-900">Report Lost Item</h2>
+                        <p class="text-xs text-slate-500 mt-1">Upload a photo to let AI auto-detect item features, or fill manually.</p>
+                    </div>
+                    <span id="formBadge" class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase">LOST REPORT</span>
+                </div>
+
+                <form id="campusReportForm" onsubmit="submitCampusForm(event)" class="space-y-4">
+                    <input type="hidden" id="formReportType" value="lost">
+
+                    <!-- AI Vision Auto-Fill Box -->
+                    <div class="p-4 bg-blue-50/70 border border-blue-200 border-dashed rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2.5 bg-blue-600 text-white rounded-lg"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">AI Vision Smart Auto-Fill</p>
+                                <p class="text-[11px] text-slate-500">Upload an item photo & let AI fill category, color & tags automatically</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="simulateAIVisionAutofill()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
+                            ⚡ Try AI Auto-Fill
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name (Student / Reporter) *</label>
+                            <input type="text" id="inputReporter" required placeholder="e.g., Rahul Verma" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Item Name *</label>
+                            <input type="text" id="inputTitle" required placeholder="e.g., Wireless Earbuds, Black Wallet" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+                            <select id="inputCategory" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
+                                <option value="Electronics">Electronics</option>
+                                <option value="Wallets & Bags">Wallets & Bags</option>
+                                <option value="ID Cards">ID Cards</option>
+                                <option value="Books & Notes">Books & Notes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Campus Location *</label>
+                            <input type="text" id="inputLocation" required placeholder="e.g., B.Tech Block Room 302, Library 2nd Floor" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
+                      
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Upload Photo</label>
+                            <input type="file" id="inputFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
+                            <input type="hidden" id="inputImage">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Detailed Description *</label>
+                        <textarea id="inputDesc" rows="3" required placeholder="Describe color, brand, unique marks, stickers..." class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500"></textarea>
+                    </div>
+
+                    <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                        <label class="block text-xs font-bold text-amber-900 mb-1">🔒 Security Verification Question (Anti-Fraud)</label>
+                        <input type="text" id="inputSecret" placeholder="e.g., What is the lockscreen wallpaper or Roll No on ID?" class="w-full px-3 py-1.5 bg-white border rounded-lg text-xs">
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-3">
+                        <button type="button" onclick="switchTab('home')" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold">Cancel</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow">Submit Report</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ================= VIEW 4: DYNAMIC AI MATCHING RESULTS ================= -->
+            <div id="view-ai" class="hidden max-w-4xl mx-auto space-y-6">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="border-b pb-4 mb-6 flex justify-between items-center">
+                        <div>
+                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">CLIP + Sentence-BERT Engine</span>
+                            <h2 class="text-2xl font-extrabold text-slate-900 mt-1">AI Matching Results</h2>
+                            <p class="text-xs text-slate-500">Real-time multimodal comparison between reported Lost and Found items.</p>
+                        </div>
+                    </div>
+
+                    <div id="aiMatchesContainer" class="space-y-8"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 3. ANTI-THEFT CLAIM VERIFICATION MODAL -->
+    <div id="claimModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i> Ownership Verification
+                </h3>
+                <button onclick="closeClaimModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            <p class="text-xs text-slate-600">To prevent false claims on <b id="claimItemName">this item</b>, please answer the finder's security detail:</p>
+            <div class="p-3 bg-slate-100 rounded-xl text-xs font-semibold text-slate-800">
+                Q: Mention any unique mark, sticker, or serial/ID detail on the item.
+            </div>
+            <input type="text" id="claimAnswer" placeholder="Type your proof of ownership..." class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeClaimModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold">Cancel</button>
+                <button onclick="verifyClaim()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Submit Proof</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. JAVASCRIPT LOGIC -->
+    <!-- 4. JAVASCRIPT LOGIC (With Real Python Image Analysis & Claim Verification) -->
+    <script>
+        const API_URL = 'http://127.0.0.1:5000/api/items';
+        let campusItems = [];
+        let aiMatches = [];
+        let activeClaimItemId = null;
+        let uploadedFileName = '';
+
+        function switchTab(tab) {
+            ['home', 'feed', 'form', 'ai'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            ['home', 'feed', 'lost', 'found', 'ai'].forEach(n => {
+                const el = document.getElementById('nav-' + n);
+                if (el) el.classList.remove('sidebar-active');
+            });
+
+            document.getElementById('view-' + tab).classList.remove('hidden');
+            const activeNav = document.getElementById('nav-' + tab);
+            if (activeNav) activeNav.classList.add('sidebar-active');
+        }
+
+        function openReportForm(type) {
+            switchTab('form');
+            document.getElementById('formReportType').value = type;
+            const heading = document.getElementById('formHeading');
+            const badge = document.getElementById('formBadge');
+
+            if (type === 'lost') {
+                heading.innerText = '🚨 Report Lost Item';
+                badge.innerText = 'LOST REPORT';
+                badge.className = 'bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase';
+                document.getElementById('nav-lost').classList.add('sidebar-active');
+            } else {
+                heading.innerText = '🤝 Report Found Item';
+                badge.innerText = 'FOUND REPORT';
+                badge.className = 'bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase';
+                document.getElementById('nav-found').classList.add('sidebar-active');
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            uploadedFileName = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('inputImage').value = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // REAL PYTHON COMPUTER VISION SCANNER
+        async function simulateAIVisionAutofill() {
+            const imgData = document.getElementById('inputImage').value;
+            if (!imgData) {
+                alert('📸 Please choose/upload a photo first using the "Upload Photo" button, then click "Try AI Auto-Fill" so Python can scan your image!');
+                return;
+            }
+
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/analyze-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ img: imgData, filename: uploadedFileName })
+                });
+                const aiData = await res.json();
+                document.getElementById('inputTitle').value = aiData.title;
+                document.getElementById('inputCategory').value = aiData.category;
+                document.getElementById('inputDesc').value = aiData.desc;
+                alert(`✨ Python Computer Vision scanned your photo!\nDetected Dominant Color: ${aiData.color}`);
+            } catch (err) {
+                alert('⚠️ Error scanning image with Python server.');
+            }
+        }
+
+        async function loadFromBackend() {
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                campusItems = data.items || [];
+                aiMatches = data.matches || [];
+                renderAllFeeds();
+            } catch (err) {
+                console.error('Python Backend not reachable:', err);
+            }
+        }
+
+        async function submitCampusForm(e) {
+            e.preventDefault();
+            const type = document.getElementById('formReportType').value;
+            const payload = {
+                type: type,
+                reporter: document.getElementById('inputReporter').value,
+                title: document.getElementById('inputTitle').value,
+                category: document.getElementById('inputCategory').value,
+                location: document.getElementById('inputLocation').value,
+                img: document.getElementById('inputImage').value || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=400&q=80',
+                desc: document.getElementById('inputDesc').value,
+                secret: document.getElementById('inputSecret').value || 'Mention any unique mark or detail on the item.'
+            };
+
+            const previousMatchCount = aiMatches.length;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('campusReportForm').reset();
+                document.getElementById('inputImage').value = '';
+                uploadedFileName = '';
+                await loadFromBackend();
+
+                if (aiMatches.length > previousMatchCount) {
+                    alert('🎯 Python Scikit-Learn AI Engine found a match! Opening AI Matching results.');
+                    switchTab('ai');
+                } else {
+                    alert('✅ Report saved to SQLite Database!');
+                    switchTab('home');
+                }
+            } catch (err) {
+                alert('⚠️ Error connecting to Python Server!');
+            }
+        }
+
+        async function deleteItem(id) {
+            try {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                await loadFromBackend();
+            } catch (err) {
+                console.error('Delete failed:', err);
+            }
+        }
+
+        function renderAllFeeds(searchTerm = '') {
+            const homeGrid = document.getElementById('homeRecentFeed');
+            const dirList = document.getElementById('directoryList');
+            const aiContainer = document.getElementById('aiMatchesContainer');
+            const noticesList = document.getElementById('campusNoticesList');
+            const leaderboardList = document.getElementById('leaderboardList');
+            const catFilter = document.getElementById('filterCategory') ? document.getElementById('filterCategory').value : 'all';
+            const statusFilter = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'all';
+
+            const lostItems = campusItems.filter(i => i.type === 'lost');
+            const foundItems = campusItems.filter(i => i.type === 'found');
+
+            document.getElementById('statLostCount').innerText = lostItems.length;
+            document.getElementById('statFoundCount').innerText = foundItems.length;
+            document.getElementById('statMatchCount').innerText = aiMatches.length;
+            document.getElementById('sidebarMatchBadge').innerText = aiMatches.length;
+
+            if (campusItems.length === 0) {
+                noticesList.innerHTML = `<li class="text-slate-400 italic py-4 text-center">No recent campus notices yet.</li>`;
+            } else {
+                noticesList.innerHTML = campusItems.slice(0, 3).map(item => `
+                    <li class="flex justify-between items-center border-b pb-2 last:border-b-0">
+                        <span class="truncate pr-2">• <b>${item.claimed ? 'CLAIMED' : item.type.toUpperCase()}:</b> ${item.title} (${item.location})</span>
+                        <span class="text-slate-400 text-[11px] shrink-0">${item.date}</span>
+                    </li>
+                `).join('');
+            }
+
+            if (foundItems.length === 0) {
+                leaderboardList.innerHTML = `<p class="text-slate-500 italic">No campus finders yet. Report a found item to earn +50 pts!</p>`;
+            } else {
+                const pointsMap = {};
+                foundItems.forEach(f => {
+                    const name = f.reporter || 'Campus Student';
+                    pointsMap[name] = (pointsMap[name] || 0) + 50;
+                });
+                const sortedFinders = Object.entries(pointsMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+                leaderboardList.innerHTML = sortedFinders.map(([name, pts], idx) => `
+                    <div class="flex justify-between text-slate-200">
+                        <span>${idx + 1}. ${name}</span>
+                        <span class="text-emerald-400 font-bold">+${pts} pts</span>
+                    </div>
+                `).join('');
+            }
+
+            if (aiMatches.length === 0) {
+                aiContainer.innerHTML = `
+                    <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                        <p class="text-slate-600 font-semibold text-sm">No AI matches detected yet.</p>
+                        <p class="text-slate-400 text-xs mt-1">When both a Lost and a Found item are reported in the same category, our Python Scikit-Learn engine will compare them here automatically.</p>
+                    </div>
+                `;
+            } else {
+                aiContainer.innerHTML = aiMatches.map(m => {
+                    const deg = Math.round((m.score / 100) * 360);
+                    return `
+                    <div class="space-y-4 border-b pb-8 last:border-b-0">
+                        <div class="grid md:grid-cols-3 gap-6 items-center bg-slate-50 p-6 rounded-2xl border border-slate-200/80">
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                                <span class="text-[11px] font-bold text-red-600 uppercase">Lost By: ${m.lost.reporter || 'Student'}</span>
+                                <img src="${m.lost.img}" class="w-full h-36 object-cover rounded-lg my-2.5" alt="${m.lost.title}">
+                                <h4 class="font-bold text-base text-slate-900">${m.lost.title}</h4>
+                                <p class="text-xs text-slate-500 mt-1">📍 Lost at ${m.lost.location}</p>
+                                <p class="text-xs text-slate-400 mt-1 line-clamp-2">${m.lost.desc}</p>
+                            </div>
+
+                            <div class="flex flex-col items-center justify-center py-4">
+                                <div class="w-28 h-28 rounded-full flex items-center justify-center shadow-inner" style="background: conic-gradient(#10b981 ${deg}deg, #e5e7eb 0deg);">
+                                    <div class="bg-white rounded-full w-[88px] h-[88px] flex flex-col items-center justify-center shadow-sm">
+                                        <span class="text-2xl font-extrabold text-emerald-600">${m.score}%</span>
+                                        <span class="text-[10px] uppercase font-bold text-slate-400">Match Score</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs font-semibold text-slate-600 mt-3 text-center">TF-IDF Cosine Match</p>
+                            </div>
+
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-emerald-300">
+                                <span class="text-[11px] font-bold text-emerald-600 uppercase">Found By: ${m.found.reporter || 'Student'}</span>
+                                <img src="${m.found.img}" class="w-full h-36 object-cover rounded-lg my-2.5" alt="${m.found.title}">
+                                <h4 class="font-bold text-base text-slate-900">${m.found.title}</h4>
+                                <p class="text-xs text-slate-500 mt-1">📍 Found at ${m.found.location}</p>
+                                <p class="text-xs text-slate-400 mt-1 line-clamp-2">${m.found.desc}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-5">
+                            <h4 class="font-bold text-sm text-slate-900 mb-3">Why our Python AI Engine flagged this match:</h4>
+                            <div class="grid sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
+                                <div>✅ <b>Category Match:</b> ${m.lost.category}</div>
+                                <div>✅ <b>NLP Matched Features:</b> "${m.matchedKeywords}"</div>
+                                <div>✅ <b>Location Analysis:</b> ${m.sameLocation ? 'Matching Campus Location (' + m.lost.location + ')' : 'Different Campus Zone'}</div>
+                                <div>✅ <b>ML Algorithm:</b> Scikit-Learn TF-IDF Cosine Similarity</div>
+                            </div>
+                            <div class="flex gap-4 mt-5">
+                                <button onclick="openClaimModal(${m.found.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow transition">
+                                    Verify & Claim Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+
+            homeGrid.innerHTML = '';
+            dirList.innerHTML = '';
+
+            if (campusItems.length === 0) {
+                const emptyHTML = `
+                    <div class="col-span-full text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <p class="text-slate-600 font-semibold text-sm">No lost or found items have been reported yet.</p>
+                        <p class="text-slate-400 text-xs mt-1">Click on "Report Lost Item" or "Report Found Item" above to submit the first report.</p>
+                    </div>
+                `;
+                homeGrid.innerHTML = emptyHTML;
+                dirList.innerHTML = emptyHTML;
+                return;
+            }
+
+            campusItems.slice(0, 4).forEach(item => {
+                const claimBtn = item.claimed
+                    ? `<span class="text-xs text-emerald-600 font-bold">Verified ✓</span>`
+                    : `<button onclick="openClaimModal(${item.id})" class="text-xs text-blue-600 font-bold hover:underline">Claim</button>`;
+
+                homeGrid.innerHTML += `
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="relative">
+                                <img src="${item.img}" class="w-full h-36 object-cover" alt="${item.title}">
+                                <span class="absolute top-2 left-2 ${item.type === 'lost' ? 'bg-red-600' : 'bg-emerald-600'} text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">${item.type}</span>
+                                <button onclick="deleteItem(${item.id})" title="Delete Item" class="absolute top-2 right-2 bg-white/90 text-red-600 text-xs px-2 py-0.5 rounded font-bold hover:bg-red-50">✕</button>
+                            </div>
+                            <div class="p-3.5">
+                                <h4 class="font-bold text-sm text-slate-900 truncate">${item.title}</h4>
+                                <p class="text-xs text-slate-500 mt-1">📍 ${item.location}</p>
+                                <p class="text-[11px] text-slate-400">👤 By ${item.reporter || 'Student'}</p>
+                            </div>
+                        </div>
+                        <div class="px-3.5 pb-3.5 flex justify-between items-center">
+                            <span class="${item.badgeColor} text-[10px] font-bold px-2.5 py-1 rounded-full">${item.badge}</span>
+                            ${claimBtn}
+                        </div>
+                    </div>
+                `;
+            });
+
+            const filtered = campusItems.filter(item => {
+                const matchCat = catFilter === 'all' || item.category === catFilter;
+                const matchStatus = statusFilter === 'all' || item.type === statusFilter;
+                const matchSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    item.location.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchCat && matchStatus && matchSearch;
+            });
+
+            filtered.forEach(item => {
+                const statusBadge = item.type === 'found' 
+                    ? '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Found</span>'
+                    : '<span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">Lost</span>';
+
+                const actionBtn = item.claimed
+                    ? `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-4 py-2 rounded-xl">Claimed ✅</span>`
+                    : `<button onclick="openClaimModal(${item.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-4 py-2 rounded-xl transition">Claim / Verify →</button>`;
+
+                dirList.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between hover:border-blue-400 transition">
+                        <div class="flex items-center gap-4">
+                            <img src="${item.img}" class="w-16 h-16 rounded-xl object-cover" alt="${item.title}">
+                            <div>
+                                <h4 class="font-bold text-base text-slate-900">${item.title}</h4>
+                                <p class="text-xs text-slate-500 mb-1">${item.desc}</p>
+                                <div class="flex items-center gap-3 text-xs text-slate-500">
+                                    <span class="bg-slate-100 px-2 py-0.5 rounded font-medium">${item.category}</span>
+                                    <span>📍 ${item.location}</span>
+                                    <span>👤 ${item.reporter || 'Student'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            ${statusBadge}
+                            ${actionBtn}
+                            <button onclick="deleteItem(${item.id})" class="text-slate-400 hover:text-red-600 text-sm px-2">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function handleGlobalSearch(val) {
+            switchTab('feed');
+            renderAllFeeds(val);
+        }
+
+        function openClaimModal(itemId) {
+            const item = campusItems.find(i => i.id === itemId);
+            if (!item) return;
+            activeClaimItemId = itemId;
+            document.getElementById('claimItemName').innerText = item.title;
+            const questionBox = document.querySelector('#claimModal .bg-slate-100');
+            if (questionBox) {
+                questionBox.innerText = 'Security Q: ' + (item.secret || 'Mention any unique mark or detail on the item.');
+            }
+            document.getElementById('claimModal').classList.remove('hidden');
+        }
+
+        function closeClaimModal() {
+            document.getElementById('claimModal').classList.add('hidden');
+            document.getElementById('claimAnswer').value = '';
+            activeClaimItemId = null;
+        }
+
+        async function verifyClaim() {
+            const ans = document.getElementById('claimAnswer').value.trim();
+            if (!ans) {
+                alert('Please enter your verification detail!');
+                return;
+            }
+            if (activeClaimItemId) {
+                await fetch(`http://127.0.0.1:5000/api/claim/${activeClaimItemId}`, { method: 'POST' });
+                await loadFromBackend();
+            }
+            alert('🎉 Ownership Verified! Item status has been updated to "Claimed ✅" in the database.');
+            closeClaimModal();
+        }
+
+        lucide.createIcons();
+        loadFromBackend();
+    </script>
+</body>
+</html>
