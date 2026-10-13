@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Lost & Found - Campus Portal</title>
+    <title>Smart Lost & Found - Multi-Campus Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -16,20 +16,71 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 flex h-screen overflow-hidden">
 
+    <!-- ================= 0. STARTING STUDENT ONBOARDING / CAMPUS LOGIN MODAL ================= -->
+    <div id="onboardingModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 space-y-5">
+            <div class="flex items-center gap-3.5 border-b pb-4">
+                <img src="LOGO_xFF5z83Tr.webp" onerror="this.src='https://ui-avatars.com/api/?name=GEU&background=dc2626&color=fff'" class="w-12 h-12 object-contain" alt="GEU Logo">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-900">Graphic Era Portal</h2>
+                    <p class="text-xs text-slate-500 font-medium">Smart Lost & Found System</p>
+                </div>
+            </div>
+
+            <form id="onboardingForm" onsubmit="handleUserOnboarding(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                    <input type="text" id="loginName" required placeholder="Enter your full name" class="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-blue-600">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">10-Digit Phone Number (Numeric Only) *</label>
+                    <input type="text" id="loginPhone" required maxlength="10"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                        placeholder="e.g., 9876543210"
+                        class="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-blue-600 font-mono tracking-wider">
+                    <p id="phoneError" class="text-[11px] text-red-600 font-semibold mt-1 hidden">⚠️ Phone number must be exactly 10 digits (0-9 only)!</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Select Your Campus *</label>
+                    <select id="loginCampus" required class="w-full px-3.5 py-2.5 border rounded-xl text-sm bg-slate-50 font-semibold text-slate-800 focus:outline-blue-600">
+                        <option value="Graphic Era Deemed to be University (Dehradun)">1. Graphic Era Deemed to be University (Dehradun)</option>
+                        <option value="Graphic Era Hill University (Dehradun Campus)">2. Graphic Era Hill University (Dehradun Campus)</option>
+                        <option value="Graphic Era Hill University (Bhimtal Campus)">3. Graphic Era Hill University (Bhimtal Campus)</option>
+                        <option value="Graphic Era Hill University (Haldwani Campus)">4. Graphic Era Hill University (Haldwani Campus)</option>
+                        <option value="Graphic Era Medical & Hospital Campus">5. Graphic Era Medical & Hospital Campus</option>
+                    </select>
+                    <p class="text-[11px] text-slate-400 mt-1">🔒 Each campus connects to its own isolated database.</p>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-lg transition">
+                    Enter My Campus Portal →
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- 1. LEFT SIDEBAR NAVIGATION -->
     <aside class="w-64 bg-[#0f172a] text-slate-300 flex flex-col justify-between shrink-0 shadow-xl z-20">
         <div>
             <!-- University Branding Header -->
             <div class="bg-white text-slate-900 p-4 flex items-center gap-3 border-b border-slate-200">
-                <img src="LOGO_xFF5z83Tr.webp" class="w-10 h-10 object-contain" alt="GEU Logo">
+                <img src="LOGO_xFF5z83Tr.webp" onerror="this.src='https://ui-avatars.com/api/?name=GEU&background=dc2626&color=fff'" class="w-10 h-10 object-contain" alt="GEU Logo">
                 <div>
                     <h1 class="font-extrabold text-sm leading-tight text-slate-900">Graphic Era</h1>
                     <p class="text-[11px] text-slate-500 font-medium">Lost and Found Portal</p>
                 </div>
             </div>
 
+            <!-- Active Campus Database Indicator -->
+            <div class="mx-3 mt-3 p-2.5 bg-blue-950/80 border border-blue-800 rounded-xl">
+                <p class="text-[10px] uppercase font-bold text-blue-400">Active Campus Database</p>
+                <p id="sidebarCampusName" class="text-xs font-bold text-white truncate mt-0.5">Select Campus</p>
+            </div>
+
             <!-- Navigation Links -->
-            <nav class="p-3 space-y-1.5 mt-2">
+            <nav class="p-3 space-y-1.5 mt-1">
                 <button onclick="switchTab('home')" id="nav-home" class="sidebar-active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition">
                     <i data-lucide="home" class="w-4 h-4"></i> Home
                 </button>
@@ -64,18 +115,26 @@
         <!-- TOP NAVBAR -->
         <header class="bg-white px-6 py-3.5 shadow-sm flex justify-between items-center sticky top-0 z-10">
             <div class="relative w-96">
-                <input type="text" id="globalSearch" oninput="handleGlobalSearch(this.value)" placeholder="Search for items, e.g. keys, bag, ID card..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="globalSearch" oninput="handleGlobalSearch(this.value)" placeholder="Search items in your campus..." class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
             </div>
 
-            <div class="flex items-center gap-5">
-                <button onclick="switchTab('ai')" class="relative text-slate-600 hover:text-blue-600">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                </button>
-                <div class="flex items-center gap-2.5">
-                    <img src="https://ui-avatars.com/api/?name=Campus+Student&background=2563eb&color=fff" class="w-8 h-8 rounded-full" alt="User">
-                    <span class="text-sm font-semibold text-slate-700">Campus Portal</span>
+            <div class="flex items-center gap-4">
+                <span id="topCampusBadge" class="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold px-3 py-1 rounded-full">
+                    Campus
+                </span>
+
+                <div class="flex items-center gap-2.5 border-l pl-4">
+                    <img id="topUserAvatar" src="https://ui-avatars.com/api/?name=Student&background=2563eb&color=fff" class="w-8 h-8 rounded-full" alt="User">
+                    <div class="text-left">
+                        <p id="topUserName" class="text-xs font-bold text-slate-800 leading-none">Student</p>
+                        <p id="topUserPhone" class="text-[10px] text-slate-400 font-mono">0000000000</p>
+                    </div>
                 </div>
+
+                <button onclick="switchCampusUser()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg transition">
+                    Switch Campus / User
+                </button>
             </div>
         </header>
 
@@ -87,11 +146,11 @@
                 
                 <!-- UNIVERSITY HERO BANNER -->
                 <div class="relative rounded-2xl overflow-hidden shadow-lg h-72 flex items-center">
-                    <img src="es1.webp" class="absolute inset-0 w-full h-full object-cover object-center" alt="University Campus">
+                    <img src="es1.webp" onerror="this.src='https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1400&q=80'" class="absolute inset-0 w-full h-full object-cover object-center" alt="University Campus">
                     <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent"></div>
 
                     <div class="relative z-10 p-8 max-w-xl text-white space-y-4">
-                        <span class="bg-blue-600/90 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">AI-Powered Campus Network</span>
+                        <span id="heroCampusTag" class="bg-blue-600/90 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">AI-Powered Campus Network</span>
                         <h2 class="text-4xl font-extrabold leading-tight">Smart Lost & Found</h2>
                         <p class="text-slate-200 text-sm">Reconnecting our campus community with what matters using Computer Vision & NLP matching.</p>
 
@@ -148,7 +207,7 @@
                             <h4 class="font-bold text-sm flex items-center gap-2 text-slate-800">
                                 <i data-lucide="megaphone" class="w-4 h-4 text-blue-600"></i> Live Campus Notices
                             </h4>
-                            <span class="text-xs text-blue-600 font-semibold">Real-Time</span>
+                            <span class="text-xs text-blue-600 font-semibold">Campus Feed</span>
                         </div>
                         <ul id="campusNoticesList" class="space-y-2.5 text-xs text-slate-600"></ul>
                     </div>
@@ -157,7 +216,7 @@
                 <!-- RECENTLY REPORTED CARDS -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg text-slate-900">Recently Reported Items</h3>
+                        <h3 class="font-bold text-lg text-slate-900">Recently Reported in Your Campus</h3>
                         <button onclick="switchTab('feed')" class="text-sm text-blue-600 font-semibold hover:underline">View All</button>
                     </div>
                     <div id="homeRecentFeed" class="grid sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
@@ -167,7 +226,7 @@
             <!-- ================= VIEW 2: LOST & FOUND LIST VIEW ================= -->
             <div id="view-feed" class="hidden space-y-5">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4">
-                    <h2 class="text-xl font-bold text-slate-900">Lost & Found Directory</h2>
+                    <h2 class="text-xl font-bold text-slate-900">Campus Lost & Found Directory</h2>
                     <div class="flex flex-wrap gap-3">
                         <select id="filterCategory" onchange="renderAllFeeds()" class="px-3 py-2 bg-slate-50 border rounded-xl text-xs font-medium">
                             <option value="all">All Categories</option>
@@ -192,7 +251,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 id="formHeading" class="text-2xl font-extrabold text-slate-900">Report Lost Item</h2>
-                        <p class="text-xs text-slate-500 mt-1">Upload a photo to let Python Computer Vision auto-detect features, or fill manually.</p>
+                        <p class="text-xs text-slate-500 mt-1">This report will be saved exclusively to your selected campus database.</p>
                     </div>
                     <span id="formBadge" class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase">LOST REPORT</span>
                 </div>
@@ -217,11 +276,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Your Name *</label>
-                            <input type="text" id="inputReporter" required placeholder="e.g., Rahul Verma" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+                            <input type="text" id="inputReporter" required placeholder="e.g., Rahul Verma" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-slate-50 focus:outline-blue-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Phone / Contact Email *</label>
-                            <input type="text" id="inputContact" required placeholder="e.g., 9876543210 or email@geu.ac.in" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">10-Digit Phone Number *</label>
+                            <input type="text" id="inputContact" required maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                                placeholder="10-digit mobile number"
+                                class="w-full px-3.5 py-2 border rounded-xl text-sm bg-slate-50 font-mono focus:outline-blue-500">
                         </div>
                     </div>
 
@@ -244,7 +306,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Campus Location (Type Any Place) *</label>
-                            <input type="text" id="inputLocation" required placeholder="e.g., B.Tech Block Room 302, Library" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
+                            <input type="text" id="inputLocation" required placeholder="e.g., CS Block Room 302, Library" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Upload Item Photo</label>
@@ -260,7 +322,7 @@
 
                     <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
                         <label class="block text-xs font-bold text-amber-900 mb-1">🔒 Security Verification Question (Anti-Fraud)</label>
-                        <input type="text" id="inputSecret" placeholder="e.g., What is the lockscreen wallpaper or Roll No on ID?" class="w-full px-3 py-1.5 bg-white border rounded-lg text-xs">
+                        <input type="text" id="inputSecret" placeholder="e.g., What brand name is printed on the back?" class="w-full px-3 py-1.5 bg-white border rounded-lg text-xs">
                     </div>
 
                     <div class="flex justify-end gap-3 pt-3">
@@ -275,9 +337,9 @@
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                     <div class="border-b pb-4 mb-6 flex justify-between items-center">
                         <div>
-                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Computer Vision + TF-IDF NLP Engine</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Campus-Isolated AI Engine</span>
                             <h2 class="text-2xl font-extrabold text-slate-900 mt-1">AI Matching Results</h2>
-                            <p class="text-xs text-slate-500">4-Factor Multimodal comparison (Category, Location, NLP Text & Visual Histogram).</p>
+                            <p class="text-xs text-slate-500">Comparing Lost & Found reports strictly within your selected campus database.</p>
                         </div>
                     </div>
 
@@ -312,10 +374,77 @@
     <!-- 4. JAVASCRIPT LOGIC -->
     <script>
         const API_URL = 'http://127.0.0.1:5000/api/items';
+        let currentUser = JSON.parse(localStorage.getItem('geuActiveUser')) || null;
         let campusItems = [];
         let aiMatches = [];
         let activeClaimItem = null;
         let uploadedFileName = '';
+
+        // Check if student is already logged in or show starting modal
+        function checkOnboarding() {
+            if (!currentUser) {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            } else {
+                document.getElementById('onboardingModal').classList.add('hidden');
+                updateUserHeaderUI();
+                loadFromBackend();
+            }
+        }
+
+        async function handleUserOnboarding(e) {
+            e.preventDefault();
+            const name = document.getElementById('loginName').value.trim();
+            const phone = document.getElementById('loginPhone').value.trim();
+            const campus = document.getElementById('loginCampus').value;
+            const errBox = document.getElementById('phoneError');
+
+            // Strict 10-digit numeric check
+            if (!/^\d{10}$/.test(phone)) {
+                errBox.classList.remove('hidden');
+                return;
+            }
+            errBox.classList.add('hidden');
+
+            try {
+                const res = await fetch('http://127.0.0.1:5000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, campus })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    currentUser = { name, phone, campus };
+                    localStorage.setItem('geuActiveUser', JSON.stringify(currentUser));
+                    document.getElementById('onboardingModal').classList.add('hidden');
+                    updateUserHeaderUI();
+                    loadFromBackend();
+                } else {
+                    alert(data.message || 'Registration error');
+                }
+            } catch (err) {
+                alert('⚠️ Cannot connect to Python Server! Make sure "py app.py" is running.');
+            }
+        }
+
+        function updateUserHeaderUI() {
+            if (!currentUser) return;
+            document.getElementById('topUserName').innerText = currentUser.name;
+            document.getElementById('topUserPhone').innerText = '+91 ' + currentUser.phone;
+            document.getElementById('topCampusBadge').innerText = '🏛️ ' + currentUser.campus;
+            document.getElementById('sidebarCampusName').innerText = currentUser.campus;
+            document.getElementById('heroCampusTag').innerText = currentUser.campus;
+            document.getElementById('topUserAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=2563eb&color=fff`;
+
+            // Pre-fill report form with logged-in student's name and 10-digit phone
+            document.getElementById('inputReporter').value = currentUser.name;
+            document.getElementById('inputContact').value = currentUser.phone;
+        }
+
+        function switchCampusUser() {
+            localStorage.removeItem('geuActiveUser');
+            currentUser = null;
+            document.getElementById('onboardingModal').classList.remove('hidden');
+        }
 
         function switchTab(tab) {
             ['home', 'feed', 'form', 'ai'].forEach(v => {
@@ -334,6 +463,10 @@
         function openReportForm(type) {
             switchTab('form');
             document.getElementById('formReportType').value = type;
+            if (currentUser) {
+                document.getElementById('inputReporter').value = currentUser.name;
+                document.getElementById('inputContact').value = currentUser.phone;
+            }
             const heading = document.getElementById('formHeading');
             const badge = document.getElementById('formBadge');
 
@@ -385,8 +518,9 @@
         }
 
         async function loadFromBackend() {
+            if (!currentUser) return;
             try {
-                const res = await fetch(API_URL);
+                const res = await fetch(`${API_URL}?campus=${encodeURIComponent(currentUser.campus)}`);
                 const data = await res.json();
                 campusItems = data.items || [];
                 aiMatches = data.matches || [];
@@ -398,11 +532,18 @@
 
         async function submitCampusForm(e) {
             e.preventDefault();
+            const phone = document.getElementById('inputContact').value.trim();
+            if (!/^\d{10}$/.test(phone)) {
+                alert('⚠️ Phone number must be exactly 10 numeric digits!');
+                return;
+            }
+
             const type = document.getElementById('formReportType').value;
             const payload = {
+                campus: currentUser.campus,
                 type: type,
                 reporter: document.getElementById('inputReporter').value,
-                contact: document.getElementById('inputContact').value,
+                contact: phone,
                 title: document.getElementById('inputTitle').value,
                 category: document.getElementById('inputCategory').value,
                 location: document.getElementById('inputLocation').value,
@@ -414,11 +555,16 @@
             const previousMatchCount = aiMatches.length;
 
             try {
-                await fetch(API_URL, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+                const resData = await res.json();
+                if (!res.ok) {
+                    alert(resData.message || 'Error submitting report');
+                    return;
+                }
 
                 document.getElementById('campusReportForm').reset();
                 document.getElementById('inputImage').value = '';
@@ -426,10 +572,10 @@
                 await loadFromBackend();
 
                 if (aiMatches.length > previousMatchCount) {
-                    alert('🎯 Python AI Engine detected a match! Opening AI Matching results.');
+                    alert(`🎯 AI Match Detected in ${currentUser.campus}! Opening AI Matching results.`);
                     switchTab('ai');
                 } else {
-                    alert('✅ Report saved to SQLite Database!');
+                    alert(`✅ Report saved to ${currentUser.campus} database!`);
                     switchTab('home');
                 }
             } catch (err) {
@@ -439,7 +585,7 @@
 
         async function deleteItem(id) {
             try {
-                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                await fetch(`${API_URL}/${id}?campus=${encodeURIComponent(currentUser.campus)}`, { method: 'DELETE' });
                 await loadFromBackend();
             } catch (err) {
                 console.error('Delete failed:', err);
@@ -464,7 +610,7 @@
             document.getElementById('sidebarMatchBadge').innerText = aiMatches.length;
 
             if (campusItems.length === 0) {
-                noticesList.innerHTML = `<li class="text-slate-400 italic py-4 text-center">No recent campus notices yet.</li>`;
+                noticesList.innerHTML = `<li class="text-slate-400 italic py-4 text-center">No recent notices in this campus yet.</li>`;
             } else {
                 noticesList.innerHTML = campusItems.slice(0, 3).map(item => `
                     <li class="flex justify-between items-center border-b pb-2 last:border-b-0">
@@ -475,7 +621,7 @@
             }
 
             if (foundItems.length === 0) {
-                leaderboardList.innerHTML = `<p class="text-slate-500 italic">No campus finders yet. Report a found item to earn +50 pts!</p>`;
+                leaderboardList.innerHTML = `<p class="text-slate-500 italic">No finders in this campus yet. Report a found item to earn +50 pts!</p>`;
             } else {
                 const pointsMap = {};
                 foundItems.forEach(f => {
@@ -494,8 +640,8 @@
             if (aiMatches.length === 0) {
                 aiContainer.innerHTML = `
                     <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-                        <p class="text-slate-600 font-semibold text-sm">No AI matches detected yet.</p>
-                        <p class="text-slate-400 text-xs mt-1">When both a Lost and a Found item are reported in the same category, our Python AI engine will compare their images & text automatically.</p>
+                        <p class="text-slate-600 font-semibold text-sm">No AI matches detected in ${currentUser ? currentUser.campus : 'this campus'} yet.</p>
+                        <p class="text-slate-400 text-xs mt-1">When both a Lost and a Found item are reported in this campus, our Python AI engine will compare them here.</p>
                     </div>
                 `;
             } else {
@@ -536,7 +682,7 @@
                             <div class="grid sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
                                 <div>✅ <b>Category Match:</b> ${m.lost.category} (100%)</div>
                                 <div>✅ <b>NLP Text Overlap:</b> "${m.matchedKeywords}"</div>
-                                <div>✅ <b>Location Proximity:</b> ${m.sameLocation ? 'Matching Location (' + m.lost.location + ')' : 'Reported on Campus'}</div>
+                                <div>✅ <b>Location Proximity:</b> ${m.sameLocation ? 'Matching Location (' + m.lost.location + ')' : 'Same Campus Zone'}</div>
                                 <div>✅ <b>Image Visual Similarity (PIL):</b> ${m.visualScore}% Color/Feature Overlap</div>
                             </div>
                             <div class="flex gap-4 mt-5">
@@ -556,8 +702,8 @@
             if (campusItems.length === 0) {
                 const emptyHTML = `
                     <div class="col-span-full text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                        <p class="text-slate-600 font-semibold text-sm">No lost or found items have been reported yet.</p>
-                        <p class="text-slate-400 text-xs mt-1">Click on "Report Lost Item" or "Report Found Item" above to submit the first report.</p>
+                        <p class="text-slate-600 font-semibold text-sm">No items reported in ${currentUser ? currentUser.campus : 'this campus'} yet.</p>
+                        <p class="text-slate-400 text-xs mt-1">Click on "Report Lost Item" or "Report Found Item" above to submit the first report for your campus.</p>
                     </div>
                 `;
                 homeGrid.innerHTML = emptyHTML;
@@ -666,15 +812,15 @@
                 return;
             }
             if (activeClaimItem) {
-                await fetch(`http://127.0.0.1:5000/api/claim/${activeClaimItem.id}`, { method: 'POST' });
-                alert(`🎉 Ownership Verified!\n\n📞 Contact Reporter (${activeClaimItem.reporter}): ${activeClaimItem.contact || 'Available at Admin Office'}\n📍 Pickup Location: ${activeClaimItem.location}`);
+                await fetch(`http://127.0.0.1:5000/api/claim/${activeClaimItem.id}?campus=${encodeURIComponent(currentUser.campus)}`, { method: 'POST' });
+                alert(`🎉 Ownership Verified!\n\n📞 Contact Reporter (${activeClaimItem.reporter}): +91 ${activeClaimItem.contact}\n📍 Pickup Location: ${activeClaimItem.location}`);
                 await loadFromBackend();
             }
             closeClaimModal();
         }
 
         lucide.createIcons();
-        loadFromBackend();
+        checkOnboarding();
     </script>
 </body>
 </html>
