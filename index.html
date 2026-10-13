@@ -21,12 +21,10 @@
         <div>
             <!-- University Branding Header -->
             <div class="bg-white text-slate-900 p-4 flex items-center gap-3 border-b border-slate-200">
-                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-extrabold text-lg shadow">
-                    GEU
-                </div>
+                <img src="LOGO_xFF5z83Tr.webp" class="w-10 h-10 object-contain" alt="GEU Logo">
                 <div>
                     <h1 class="font-extrabold text-sm leading-tight text-slate-900">Graphic Era</h1>
-                    <p class="text-[11px] text-slate-500 font-medium">Deemed to be University</p>
+                    <p class="text-[11px] text-slate-500 font-medium">Lost and Found Portal</p>
                 </div>
             </div>
 
@@ -56,9 +54,7 @@
             <p class="text-xs font-bold text-amber-400 flex items-center gap-1.5 mb-2">
                 <i data-lucide="award" class="w-4 h-4"></i> Top Campus Finders
             </p>
-            <div id="leaderboardList" class="space-y-2 text-xs text-slate-400">
-                <!-- Dynamically filled from database -->
-            </div>
+            <div id="leaderboardList" class="space-y-2 text-xs text-slate-400"></div>
         </div>
     </aside>
 
@@ -77,7 +73,7 @@
                     <i data-lucide="bell" class="w-5 h-5"></i>
                 </button>
                 <div class="flex items-center gap-2.5">
-                    <img src="https://ui-avatars.com/api/?name=Student+User&background=2563eb&color=fff" class="w-8 h-8 rounded-full" alt="User">
+                    <img src="https://ui-avatars.com/api/?name=Campus+Student&background=2563eb&color=fff" class="w-8 h-8 rounded-full" alt="User">
                     <span class="text-sm font-semibold text-slate-700">Campus Portal</span>
                 </div>
             </div>
@@ -91,7 +87,7 @@
                 
                 <!-- UNIVERSITY HERO BANNER -->
                 <div class="relative rounded-2xl overflow-hidden shadow-lg h-72 flex items-center">
-                    <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1400&q=80" class="absolute inset-0 w-full h-full object-cover" alt="University Campus">
+                    <img src="es1.webp" class="absolute inset-0 w-full h-full object-cover object-center" alt="University Campus">
                     <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-transparent"></div>
 
                     <div class="relative z-10 p-8 max-w-xl text-white space-y-4">
@@ -112,7 +108,6 @@
 
                 <!-- STATS & DYNAMIC ANNOUNCEMENTS ROW -->
                 <div class="grid lg:grid-cols-3 gap-6">
-                    <!-- 3 KPI Stat Cards -->
                     <div class="lg:col-span-2 grid grid-cols-3 gap-4">
                         <div class="bg-red-50/70 border border-red-100 p-5 rounded-2xl flex flex-col justify-between">
                             <div class="flex items-center gap-3">
@@ -148,7 +143,6 @@
                         </div>
                     </div>
 
-                    <!-- DYNAMIC Campus Notices (Updates automatically when items are added) -->
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="font-bold text-sm flex items-center gap-2 text-slate-800">
@@ -156,9 +150,7 @@
                             </h4>
                             <span class="text-xs text-blue-600 font-semibold">Real-Time</span>
                         </div>
-                        <ul id="campusNoticesList" class="space-y-2.5 text-xs text-slate-600">
-                            <!-- Dynamically populated from database -->
-                        </ul>
+                        <ul id="campusNoticesList" class="space-y-2.5 text-xs text-slate-600"></ul>
                     </div>
                 </div>
 
@@ -200,7 +192,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 id="formHeading" class="text-2xl font-extrabold text-slate-900">Report Lost Item</h2>
-                        <p class="text-xs text-slate-500 mt-1">Upload a photo to let AI auto-detect item features, or fill manually.</p>
+                        <p class="text-xs text-slate-500 mt-1">Upload a photo to let Python Computer Vision auto-detect features, or fill manually.</p>
                     </div>
                     <span id="formBadge" class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase">LOST REPORT</span>
                 </div>
@@ -213,27 +205,31 @@
                         <div class="flex items-center gap-3">
                             <div class="p-2.5 bg-blue-600 text-white rounded-lg"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
                             <div>
-                                <p class="text-xs font-bold text-slate-800">AI Vision Smart Auto-Fill</p>
-                                <p class="text-[11px] text-slate-500">Upload an item photo & let AI fill category, color & tags automatically</p>
+                                <p class="text-xs font-bold text-slate-800">Python Computer Vision Auto-Fill</p>
+                                <p class="text-[11px] text-slate-500">Choose a photo below first, then click here to auto-detect color & category</p>
                             </div>
                         </div>
                         <button type="button" onclick="simulateAIVisionAutofill()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
-                            ⚡ Try AI Auto-Fill
+                            ⚡ Scan Photo with AI
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name (Student / Reporter) *</label>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Your Name *</label>
                             <input type="text" id="inputReporter" required placeholder="e.g., Rahul Verma" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
                         </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Phone / Contact Email *</label>
+                            <input type="text" id="inputContact" required placeholder="e.g., 9876543210 or email@geu.ac.in" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Item Name *</label>
                             <input type="text" id="inputTitle" required placeholder="e.g., Wireless Earbuds, Black Wallet" class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
                         </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
                             <select id="inputCategory" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
@@ -243,14 +239,16 @@
                                 <option value="Books & Notes">Books & Notes</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Campus Location *</label>
-                            <input type="text" id="inputLocation" required placeholder="e.g., B.Tech Block Room 302, Library 2nd Floor" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
-                      
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Campus Location (Type Any Place) *</label>
+                            <input type="text" id="inputLocation" required placeholder="e.g., B.Tech Block Room 302, Library" class="w-full px-3.5 py-2 border rounded-xl text-sm bg-white focus:outline-blue-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Upload Photo</label>
-                            <input type="file" id="inputFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-500 file:py-1.5 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Upload Item Photo</label>
+                            <input type="file" id="inputFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-500 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700">
                             <input type="hidden" id="inputImage">
                         </div>
                     </div>
@@ -277,9 +275,9 @@
                 <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                     <div class="border-b pb-4 mb-6 flex justify-between items-center">
                         <div>
-                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">CLIP + Sentence-BERT Engine</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Computer Vision + TF-IDF NLP Engine</span>
                             <h2 class="text-2xl font-extrabold text-slate-900 mt-1">AI Matching Results</h2>
-                            <p class="text-xs text-slate-500">Real-time multimodal comparison between reported Lost and Found items.</p>
+                            <p class="text-xs text-slate-500">4-Factor Multimodal comparison (Category, Location, NLP Text & Visual Histogram).</p>
                         </div>
                     </div>
 
@@ -299,25 +297,24 @@
                 </h3>
                 <button onclick="closeClaimModal()" class="text-slate-400 hover:text-slate-600">✕</button>
             </div>
-            <p class="text-xs text-slate-600">To prevent false claims on <b id="claimItemName">this item</b>, please answer the finder's security detail:</p>
-            <div class="p-3 bg-slate-100 rounded-xl text-xs font-semibold text-slate-800">
-                Q: Mention any unique mark, sticker, or serial/ID detail on the item.
+            <p class="text-xs text-slate-600">To claim <b id="claimItemName">this item</b>, please answer the security verification detail:</p>
+            <div id="claimQuestionBox" class="p-3 bg-slate-100 rounded-xl text-xs font-semibold text-slate-800">
+                Security Q: Mention any unique mark or detail on the item.
             </div>
             <input type="text" id="claimAnswer" placeholder="Type your proof of ownership..." class="w-full px-3.5 py-2 border rounded-xl text-sm focus:outline-blue-500">
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="closeClaimModal()" class="px-4 py-2 bg-slate-100 rounded-xl text-xs font-semibold">Cancel</button>
-                <button onclick="verifyClaim()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Submit Proof</button>
+                <button onclick="verifyClaim()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">Verify & Reveal Contact</button>
             </div>
         </div>
     </div>
 
     <!-- 4. JAVASCRIPT LOGIC -->
-    <!-- 4. JAVASCRIPT LOGIC (With Real Python Image Analysis & Claim Verification) -->
     <script>
         const API_URL = 'http://127.0.0.1:5000/api/items';
         let campusItems = [];
         let aiMatches = [];
-        let activeClaimItemId = null;
+        let activeClaimItem = null;
         let uploadedFileName = '';
 
         function switchTab(tab) {
@@ -364,11 +361,10 @@
             reader.readAsDataURL(file);
         }
 
-        // REAL PYTHON COMPUTER VISION SCANNER
         async function simulateAIVisionAutofill() {
             const imgData = document.getElementById('inputImage').value;
             if (!imgData) {
-                alert('📸 Please choose/upload a photo first using the "Upload Photo" button, then click "Try AI Auto-Fill" so Python can scan your image!');
+                alert('📸 Please select a photo first using the "Upload Item Photo" button, then click "Scan Photo with AI"!');
                 return;
             }
 
@@ -406,6 +402,7 @@
             const payload = {
                 type: type,
                 reporter: document.getElementById('inputReporter').value,
+                contact: document.getElementById('inputContact').value,
                 title: document.getElementById('inputTitle').value,
                 category: document.getElementById('inputCategory').value,
                 location: document.getElementById('inputLocation').value,
@@ -429,7 +426,7 @@
                 await loadFromBackend();
 
                 if (aiMatches.length > previousMatchCount) {
-                    alert('🎯 Python Scikit-Learn AI Engine found a match! Opening AI Matching results.');
+                    alert('🎯 Python AI Engine detected a match! Opening AI Matching results.');
                     switchTab('ai');
                 } else {
                     alert('✅ Report saved to SQLite Database!');
@@ -471,7 +468,7 @@
             } else {
                 noticesList.innerHTML = campusItems.slice(0, 3).map(item => `
                     <li class="flex justify-between items-center border-b pb-2 last:border-b-0">
-                        <span class="truncate pr-2">• <b>${item.claimed ? 'CLAIMED' : item.type.toUpperCase()}:</b> ${item.title} (${item.location})</span>
+                        <span class="truncate pr-2">• <b>${intClaim(item) ? 'CLAIMED' : item.type.toUpperCase()}:</b> ${item.title} (${item.location})</span>
                         <span class="text-slate-400 text-[11px] shrink-0">${item.date}</span>
                     </li>
                 `).join('');
@@ -498,7 +495,7 @@
                 aiContainer.innerHTML = `
                     <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
                         <p class="text-slate-600 font-semibold text-sm">No AI matches detected yet.</p>
-                        <p class="text-slate-400 text-xs mt-1">When both a Lost and a Found item are reported in the same category, our Python Scikit-Learn engine will compare them here automatically.</p>
+                        <p class="text-slate-400 text-xs mt-1">When both a Lost and a Found item are reported in the same category, our Python AI engine will compare their images & text automatically.</p>
                     </div>
                 `;
             } else {
@@ -522,7 +519,7 @@
                                         <span class="text-[10px] uppercase font-bold text-slate-400">Match Score</span>
                                     </div>
                                 </div>
-                                <p class="text-xs font-semibold text-slate-600 mt-3 text-center">TF-IDF Cosine Match</p>
+                                <p class="text-xs font-semibold text-slate-600 mt-3 text-center">Multimodal AI Match</p>
                             </div>
 
                             <div class="bg-white p-4 rounded-xl shadow-sm border border-emerald-300">
@@ -537,14 +534,14 @@
                         <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-5">
                             <h4 class="font-bold text-sm text-slate-900 mb-3">Why our Python AI Engine flagged this match:</h4>
                             <div class="grid sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
-                                <div>✅ <b>Category Match:</b> ${m.lost.category}</div>
-                                <div>✅ <b>NLP Matched Features:</b> "${m.matchedKeywords}"</div>
-                                <div>✅ <b>Location Analysis:</b> ${m.sameLocation ? 'Matching Campus Location (' + m.lost.location + ')' : 'Different Campus Zone'}</div>
-                                <div>✅ <b>ML Algorithm:</b> Scikit-Learn TF-IDF Cosine Similarity</div>
+                                <div>✅ <b>Category Match:</b> ${m.lost.category} (100%)</div>
+                                <div>✅ <b>NLP Text Overlap:</b> "${m.matchedKeywords}"</div>
+                                <div>✅ <b>Location Proximity:</b> ${m.sameLocation ? 'Matching Location (' + m.lost.location + ')' : 'Reported on Campus'}</div>
+                                <div>✅ <b>Image Visual Similarity (PIL):</b> ${m.visualScore}% Color/Feature Overlap</div>
                             </div>
                             <div class="flex gap-4 mt-5">
                                 <button onclick="openClaimModal(${m.found.id})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow transition">
-                                    Verify & Claim Item
+                                    Verify Ownership & Reveal Finder Contact
                                 </button>
                             </div>
                         </div>
@@ -569,7 +566,8 @@
             }
 
             campusItems.slice(0, 4).forEach(item => {
-                const claimBtn = item.claimed
+                const isClaimed = intClaim(item);
+                const claimBtn = isClaimed
                     ? `<span class="text-xs text-emerald-600 font-bold">Verified ✓</span>`
                     : `<button onclick="openClaimModal(${item.id})" class="text-xs text-blue-600 font-bold hover:underline">Claim</button>`;
 
@@ -608,7 +606,8 @@
                     ? '<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">Found</span>'
                     : '<span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">Lost</span>';
 
-                const actionBtn = item.claimed
+                const isClaimed = intClaim(item);
+                const actionBtn = isClaimed
                     ? `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-4 py-2 rounded-xl">Claimed ✅</span>`
                     : `<button onclick="openClaimModal(${item.id})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-4 py-2 rounded-xl transition">Claim / Verify →</button>`;
 
@@ -636,6 +635,10 @@
             });
         }
 
+        function intClaim(item) {
+            return parseInt(item.claimed || 0) === 1;
+        }
+
         function handleGlobalSearch(val) {
             switchTab('feed');
             renderAllFeeds(val);
@@ -644,19 +647,16 @@
         function openClaimModal(itemId) {
             const item = campusItems.find(i => i.id === itemId);
             if (!item) return;
-            activeClaimItemId = itemId;
+            activeClaimItem = item;
             document.getElementById('claimItemName').innerText = item.title;
-            const questionBox = document.querySelector('#claimModal .bg-slate-100');
-            if (questionBox) {
-                questionBox.innerText = 'Security Q: ' + (item.secret || 'Mention any unique mark or detail on the item.');
-            }
+            document.getElementById('claimQuestionBox').innerText = 'Security Q: ' + (item.secret || 'Mention any unique mark or detail on the item.');
             document.getElementById('claimModal').classList.remove('hidden');
         }
 
         function closeClaimModal() {
             document.getElementById('claimModal').classList.add('hidden');
             document.getElementById('claimAnswer').value = '';
-            activeClaimItemId = null;
+            activeClaimItem = null;
         }
 
         async function verifyClaim() {
@@ -665,11 +665,11 @@
                 alert('Please enter your verification detail!');
                 return;
             }
-            if (activeClaimItemId) {
-                await fetch(`http://127.0.0.1:5000/api/claim/${activeClaimItemId}`, { method: 'POST' });
+            if (activeClaimItem) {
+                await fetch(`http://127.0.0.1:5000/api/claim/${activeClaimItem.id}`, { method: 'POST' });
+                alert(`🎉 Ownership Verified!\n\n📞 Contact Reporter (${activeClaimItem.reporter}): ${activeClaimItem.contact || 'Available at Admin Office'}\n📍 Pickup Location: ${activeClaimItem.location}`);
                 await loadFromBackend();
             }
-            alert('🎉 Ownership Verified! Item status has been updated to "Claimed ✅" in the database.');
             closeClaimModal();
         }
 
