@@ -5,7 +5,7 @@ import os
 import re
 import base64
 import io
-from PIL import Image
+from PIL import Image, ImageStat, ImageFilter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -111,45 +111,187 @@ def register_user():
     conn.close()
     return jsonify({"status": "success", "user": {"name": name, "role": role, "portal_type": portal_type, "phone": phone, "campus": campus, "db": db_file}})
 
+
 def detect_image_color_and_tags(base64_str, filename=""):
     try:
-        if "," in base64_str: base64_str = base64_str.split(",")[1]
-        img_bytes = base64.b64decode(base64_str)
-        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
-        w, h = img.size
-        cropped = img.crop((w * 0.2, h * 0.2, w * 0.8, h * 0.8)).resize((1, 1))
-        r, g, b = cropped.getpixel((0, 0))
+        # Decode uploaded image
+        if "," in base64_str:
+            base64_str = base64_str.split(",", 1)[1]
 
-        if r < 60 and g < 60 and b < 60: color = "Black"
-        elif r > 200 and g > 200 and b > 200: color = "White / Silver"
-        elif r > 150 and g < 80 and b < 80: color = "Red"
-        elif b > 130 and r < 100: color = "Blue"
-        elif g > 130 and r < 100: color = "Green"
-        elif r > 120 and g > 70 and b < 60: color = "Brown / Tan"
-        else: color = "Multi-colored"
+        img_bytes = base64.b64decode(base64_str, validate=True)
 
-        fname = filename.lower()
-        if any(k in fname for k in ['medical', 'report', 'prescription', 'opd']):
-            category = "Medical Files / Reports"
-            item_type = f"{color} Medical File"
-        elif any(k in fname for k in ['id', 'card', 'aadhar']):
-            category = "ID Cards & Documents"
-            item_type = f"{color} ID Card"
-        elif any(k in fname for k in ['wallet', 'bag', 'purse']):
-            category = "Wallets & Bags"
-            item_type = f"{color} Wallet / Bag"
+        if len(img_bytes) > 8 * 1024 * 1024:
+            return {"error": "Image size must be below 8 MB"}
+
+        img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+        width, height = img.size
+
+        if width < 50 or height < 50:
+            return {"error": "Image resolution is too small"}
+
+        # Resize for faster visual analysis
+        analysis_img = img.copy()
+        analysis_img.thumbnail((500, 500))
+
+        # 1. Detect dominant colours
+        quantized = analysis_img.quantize(colors=5)
+
+        palette = quantized.convert("RGB")
+        color_counts = palette.getcolors(
+            maxcolors=500 * 500
+        )
+
+        color_counts.sort(reverse=True)
+
+        dominant_rgb = color_counts[0][1]
+
+        r, g, b = dominant_rgb
+
+        if max(r, g, b) - min(r, g, b) < 25:
+            if sum(dominant_rgb) / 3 < 70:
+                color = "Black"
+            elif sum(dominant_rgb) / 3 > 190:
+                color = "White / Silver"
+            else:
+                color = "Grey"
+        elif r > 150 and r > g * 1.25:
+            color = "Red"
+        elif g > r * 1.15 and g > b * 1.1:
+            color = "Green"
+        elif b > r * 1.15 and b > g * 1.05:
+            color = "Blue"
+        elif r > 120 and g > 65 and b < 100:
+            color = "Brown"
+        elif r > 180 and g > 120 and b < 100:
+            color = "Yellow / Orange"
         else:
-            category = "Electronics"
-            item_type = f"{color} Electronic Device"
+            color = "Multi-colored"
 
-        desc = f"AI Scan: Dominant {color.lower()} color profile (RGB: {r},{g},{b})."
-        return {"title": item_type, "category": category, "desc": desc, "color": color}
-    except Exception:
-        return {"title": "Scanned Item", "category": "Electronics", "desc": "AI Vision scanned image.", "color": "Detected"}
+        # 2. Analyse brightness
+        image_stats = ImageStat.Stat(analysis_img)
+        brightness = sum(image_stats.mean) / 3
+
+        if brightness < 65:
+            lighting = "Low lighting"
+        elif brightness > 205:
+            lighting = "Very bright"
+        else:
+            lighting = "Normal lighting"
+
+        # 3. Analyse sharpness and edges
+        edges = analysis_img.filter(ImageFilter.FIND_EDGES)
+        edge_score = ImageStat.Stat(edges).mean[0]
+
+        if edge_score < 12:
+            clarity = "Low visual detail"
+        elif edge_score < 35:
+            clarity = "Moderate visual detail"
+        else:
+            clarity = "High visual detail"
+
+        # 4. Suggest category using filename keywords
+        fname = filename.lower()
+
+        category_rules = {
+            "Medical Files / Reports": [
+                "medical", "report", "prescription",
+                "opd", "medicalfile", "xray"
+            ],
+            "ID Cards & Documents": [
+                "id", "card", "aadhar",
+                "document", "license", "identity"
+            ],
+            "Wallets & Bags": [
+                "wallet", "bag", "purse", "backpack"
+            ],
+            "Keys & Accessories": [
+                "key", "keys", "watch", "accessory"
+            ],
+            "Books & Notes": [
+                "book", "notebook", "notes"
+            ],
+            "Electronics": [
+                "phone", "mobile", "laptop",
+                "charger", "earphone", "electronic"
+            ]
+        }
+
+        category = "Electronics"
+
+        for cat, keywords in category_rules.items():
+            if any(word in fname for word in keywords):
+                category = cat
+                break
+
+        # 5. Generate visual description
+        description = (
+            f"Visual Analysis Report:\n"
+            f"Dominant Colour: {color}\n"
+            f"Image Resolution: {width} x {height}\n"
+            f"Lighting Condition: {lighting}\n"
+            f"Visual Clarity: {clarity}\n"
+            f"Visual Edge Score: {edge_score:.2f}\n"
+            f"Suggested Category: {category}\n"
+            f"Note: Category is a preliminary suggestion. "
+            f"Please verify the actual item before submitting."
+        )
+
+        # 6. Generate title suggestion
+        if category == "Electronics":
+            title = f"{color} Electronic Item"
+        elif category == "Wallets & Bags":
+            title = f"{color} Wallet / Bag"
+        elif category == "ID Cards & Documents":
+            title = f"{color} ID / Document"
+        elif category == "Medical Files / Reports":
+            title = f"{color} Medical File"
+        elif category == "Keys & Accessories":
+            title = f"{color} Accessory"
+        else:
+            title = f"{color} Book / Notes"
+
+        return {
+            "title": title,
+            "category": category,
+            "desc": description,
+            "color": color,
+            "brightness": round(brightness, 2),
+            "clarity": clarity,
+            "edge_score": round(edge_score, 2),
+            "width": width,
+            "height": height
+        }
+
+    except Exception as e:
+        print("Image Analysis Error:", str(e))
+
+        return {
+            "error": "Unable to analyse image. Please upload a valid image."
+        }
+
 
 @app.route('/api/analyze-image', methods=['POST'])
 def analyze_image():
-    return jsonify(detect_image_color_and_tags(request.json.get('img', ''), request.json.get('filename', '')))
+    data = request.get_json(silent=True) or {}
+
+    image_data = data.get('img', '')
+    filename = data.get('filename', '')
+
+    if not image_data:
+        return jsonify({
+            "error": "Please upload an image first."
+        }), 400
+
+    result = detect_image_color_and_tags(
+        image_data,
+        filename
+    )
+
+    if "error" in result:
+        return jsonify(result), 400
+
+    return jsonify(result), 200
 
 def compute_nlp_similarity(text1, text2):
     try:
